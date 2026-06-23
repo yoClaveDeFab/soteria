@@ -1,0 +1,222 @@
+import sys
+import asyncio
+import json
+from google.genai import types
+from google.genai.errors import ServerError
+from google.adk.sessions import InMemorySessionService
+from google.adk.runners import Runner
+
+# Importar todos los agentes necesarios del proyecto
+from analista_chats import root_agent as agent_analista
+from enrutador import root_agent as agent_enrutador
+from especialista_repaso import root_agent as agent_repaso
+from especialista_derivacion import root_agent as agent_derivacion
+from especialista_simulador import root_agent as agent_simulador
+from maestro import root_agent as agent_maestro
+
+# Configurar terminal para codificación UTF-8
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
+async def call_agent_with_retry(runner, session_service, app_name, session_id, user_id, text_input):
+    content = types.Content(role="user", parts=[types.Part(text=text_input)])
+    for attempt in range(4):
+        try:
+            response_parts = []
+            async for event in runner.run_async(
+                user_id=user_id,
+                session_id=session_id,
+                new_message=content
+            ):
+                if event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if part.text:
+                            response_parts.append(part.text)
+            return "".join(response_parts)
+        except ServerError as e:
+            if "503" in str(e) and attempt < 3:
+                print(f"\n[Aviso]: Error temporal del modelo (503). Reintentando en 5s... (Intento {attempt + 1}/4)")
+                await asyncio.sleep(5)
+                # Reseteamos sesión en caso de error de conexión para evitar envíos duplicados
+                try:
+                    await session_service.delete_session(app_name=app_name, user_id=user_id, session_id=session_id)
+                except Exception:
+                    pass
+                await session_service.create_session(
+                    app_name=app_name,
+                    user_id=user_id,
+                    session_id=session_id
+                )
+            else:
+                return f"Error 503 del Servidor: {e}"
+        except Exception as e:
+            return f"Error inesperado: {e}"
+
+# Inicializar servicios globales para soportar múltiples sesiones concurrentes (ej: Gradio)
+session_service = InMemorySessionService()
+
+apps = {
+    "analista": ("soteria_analista", agent_analista),
+    "enrutador": ("soteria_enrutador", agent_enrutador),
+    "repaso": ("soteria_repaso", agent_repaso),
+    "derivacion": ("soteria_derivacion", agent_derivacion),
+    "simulador": ("soteria_simulador", agent_simulador),
+    "maestro": ("soteria_maestro", agent_maestro),
+}
+
+runners = {}
+for key, (app_name, agent) in apps.items():
+    runners[key] = Runner(agent=agent, app_name=app_name, session_service=session_service)
+
+initialized_sessions = set()
+
+async def ensure_session_initialized(session_id: str, user_id: str):
+    """Inicializa la sesión para cada uno de los agentes de forma segura."""
+    if session_id in initialized_sessions:
+        return
+    for key, (app_name, agent) in apps.items():
+        try:
+            await session_service.create_session(
+                app_name=app_name,
+                user_id=user_id,
+                session_id=session_id
+            )
+        except Exception:
+            # Si ya existe, se ignora la excepción
+            pass
+    initialized_sessions.add(session_id)
+
+async def responder(user_input: str, history, session_id: str, user_id: str = "gradio_user") -> str:
+    """Ejecuta el flujo completo de agentes (Analista -> Enrutador -> Especialista -> Maestro)."""
+    # Asegurar que las sesiones estén preparadas para esta sesión de usuario
+    await ensure_session_initialized(session_id, user_id)
+    
+    # 1. Ejecutar el Analista de Chats
+    analisis_json_str = await call_agent_with_retry(
+        runners["analista"], session_service, "soteria_analista", session_id, user_id, user_input
+    )
+
+    # 2. Ejecutar el Enrutador
+    enrutamiento_json_str = await call_agent_with_retry(
+        runners["enrutador"], session_service, "soteria_enrutador", session_id, user_id, analisis_json_str
+    )
+
+    # Parsear las decisiones del enrutador
+    try:
+        decision = json.loads(enrutamiento_json_str.strip())
+        destino = decision.get("destino", "MAESTRO_DIRECTO")
+    except Exception:
+        destino = "MAESTRO_DIRECTO"
+
+    # 3. Flujo condicional basado en la decisión del Enrutador
+    final_response = ""
+
+    if destino == "SEGURIDAD":
+        instruccion_seguridad = (
+            "INSTRUCCIÓN INTERNA DE SEGURIDAD: El facilitador real se encuentra en crisis personal. "
+            "Activa tu barrera de seguridad de inmediato, detén toda simulación y proporciona los "
+            "recursos nacionales directos (911, Línea de la Vida, SAPTEL) con calidez y tono de SoterIA."
+        )
+        final_response = await call_agent_with_retry(
+            runners["maestro"], session_service, "soteria_maestro", session_id, user_id, instruccion_seguridad
+        )
+
+    elif destino == "MAESTRO_DIRECTO":
+        final_response = await call_agent_with_retry(
+            runners["maestro"], session_service, "soteria_maestro", session_id, user_id, user_input
+        )
+
+    elif destino == "ESPECIALISTA_REPASO":
+        explicacion_especialista = await call_agent_with_retry(
+            runners["repaso"], session_service, "soteria_repaso", session_id, user_id, user_input
+        )
+        prompt_maestro = (
+            f"El especialista de repaso ha generado esta explicación para la consulta del facilitador:\n"
+            f"{explicacion_especialista}\n\n"
+            f"Entrégale esta información al facilitador utilizando tu voz y cuidado de SoterIA, sin alterar datos."
+        )
+        final_response = await call_agent_with_retry(
+            runners["maestro"], session_service, "soteria_maestro", session_id, user_id, prompt_maestro
+        )
+
+    elif destino == "ESPECIALISTA_DERIVACION":
+        recursos_especialista = await call_agent_with_retry(
+            runners["derivacion"], session_service, "soteria_derivacion", session_id, user_id, user_input
+        )
+        prompt_maestro = (
+            f"El especialista de derivación ha proporcionado estos recursos e indicaciones:\n"
+            f"{recursos_especialista}\n\n"
+            f"Comunica esta información al facilitador utilizando tu voz y cuidado de SoterIA, "
+            f"entregando los números de teléfono exactos con calidez."
+        )
+        final_response = await call_agent_with_retry(
+            runners["maestro"], session_service, "soteria_maestro", session_id, user_id, prompt_maestro
+        )
+
+    elif destino == "ESPECIALISTA_SIMULADOR":
+        simulador_output = await call_agent_with_retry(
+            runners["simulador"], session_service, "soteria_simulador", session_id, user_id, user_input
+        )
+        es_feedback = any(k in simulador_output for k in ["Fortalezas", "Áreas de mejora", "Retroalimentación", "✅", "🔧"])
+        if es_feedback:
+            prompt_maestro = (
+                f"Esta es la retroalimentación final de la práctica brindada por el simulador:\n"
+                f"{simulador_output}\n\n"
+                f"Entrégale esta evaluación al facilitador utilizando tu voz oficial de SoterIA."
+            )
+            final_response = await call_agent_with_retry(
+                runners["maestro"], session_service, "soteria_maestro", session_id, user_id, prompt_maestro
+            )
+        else:
+            prompt_maestro = (
+                f"Este es un turno del personaje de la simulación (diálogo en primer plano del personaje):\n"
+                f"{simulador_output}\n\n"
+                f"Transmítelo exactamente de forma IDÉNTICA e INALTERADA al usuario. No añadas explicaciones "
+                f"ni comentarios fuera de personaje."
+            )
+            final_response = await call_agent_with_retry(
+                runners["maestro"], session_service, "soteria_maestro", session_id, user_id, prompt_maestro
+            )
+
+    return final_response
+
+async def main():
+    print("==================================================================")
+    print("           SOTERIA - SISTEMA PAP ORQUESTRADO (Google ADK)        ")
+    print("==================================================================")
+    print("Instrucciones:")
+    print("- Escribe tu mensaje y presiona Enter para interactuar.")
+    print("- Escribe 'salir' o 'exit' para finalizar la sesión.")
+    print("==================================================================\n")
+
+    user_id = "facilitador_user"
+    import uuid
+    session_id = f"soteria_{uuid.uuid4()}"
+
+    # Iniciar flujo saludando (primer contacto)
+    bienvenida = await responder("Hola", [], session_id, user_id)
+    print(f"SoterIA: {bienvenida}\n")
+
+    while True:
+        try:
+            user_input = input("Usuario: ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\nSaliendo...")
+            break
+
+        if not user_input:
+            continue
+
+        if user_input.lower() in ["salir", "exit"]:
+            print("Hasta pronto.")
+            break
+
+        response = await responder(user_input, [], session_id, user_id)
+        print(f"\nSoterIA: {response}\n")
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        print(f"\nError al ejecutar la aplicación: {e}")
+
