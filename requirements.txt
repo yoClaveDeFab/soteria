@@ -1,4 +1,5 @@
 google-adk
 python-dotenv
 mcp
-gradio
+gradio==6.19.0
+huggingface_hub>=0.26
