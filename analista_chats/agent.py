@@ -28,6 +28,8 @@ if not os.environ.get("GOOGLE_API_KEY"):
 if os.environ.get("SERVICE_ACCOUNT_PATH") and not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ.get("SERVICE_ACCOUNT_PATH")
 
+_cached_credentials = None
+
 def google_sheets_header_provider(readonly_context) -> dict[str, str]:
     """Obtiene dinámicamente un token de acceso de Google para el servidor MCP.
     
@@ -37,6 +39,7 @@ def google_sheets_header_provider(readonly_context) -> dict[str, str]:
     3. GOOGLE_REFRESH_TOKEN (OAuth 2.0 Refresh Token con Client ID/Secret en variables de entorno).
     4. google.auth.default() (Application Default Credentials locales).
     """
+    global _cached_credentials
     import os
     import json
     import google.auth
@@ -44,6 +47,11 @@ def google_sheets_header_provider(readonly_context) -> dict[str, str]:
     from google.oauth2 import service_account
     from google.oauth2.credentials import Credentials as OAuthCredentials
     import logging
+
+    # Si ya tenemos credenciales con token y no han expirado, las reusamos
+    if _cached_credentials and _cached_credentials.token and not _cached_credentials.expired:
+        return {"Authorization": f"Bearer {_cached_credentials.token}"}
+
     try:
         scopes = [
             'https://www.googleapis.com/auth/spreadsheets',
@@ -77,6 +85,7 @@ def google_sheets_header_provider(readonly_context) -> dict[str, str]:
             credentials, project = google.auth.default(scopes=scopes)
             
         credentials.refresh(Request())
+        _cached_credentials = credentials
         return {"Authorization": f"Bearer {credentials.token}"}
     except Exception as e:
         logging.getLogger("google_adk").warning(
@@ -139,6 +148,19 @@ async def append_row(
     
     try:
         headers = google_sheets_header_provider(None)
+        token = headers.get("Authorization", "").replace("Bearer ", "").strip()
+        
+        # Verificar si el token cambió o expiró respecto al subproceso MCP activo
+        active_token = getattr(sheets_mcp_toolset, "active_access_token", None)
+        if token and token != active_token:
+            # Cerrar la sesión existente para forzar la recreación del subproceso con el nuevo token
+            await sheets_mcp_toolset._mcp_session_manager.close()
+            # Inyectar el token en el env del subproceso para su inicialización
+            sheets_mcp_toolset._connection_params.server_params.env["GOOGLE_ACCESS_TOKEN"] = token
+            os.environ["GOOGLE_ACCESS_TOKEN"] = token
+            # Registrar el token activo
+            sheets_mcp_toolset.active_access_token = token
+
         session = await sheets_mcp_toolset._mcp_session_manager.create_session(headers=headers)
         response = await session.call_tool(
             "values_append",
