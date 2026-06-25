@@ -48,9 +48,38 @@ async def call_agent_with_retry(runner, session_service, app_name, session_id, u
                     session_id=session_id
                 )
             else:
-                return f"Error 503 del Servidor: {e}"
+                raise e
         except Exception as e:
-            return f"Error inesperado: {e}"
+            raise e
+
+def detect_language_local(text: str) -> str:
+    text_lower = text.lower()
+    words = text_lower.split()
+    
+    english_words = {
+        "the", "and", "you", "i", "to", "of", "a", "is", "in", "it", "that", "for", "on", "are", 
+        "as", "with", "they", "at", "be", "this", "have", "from", "or", "one", "had", "by", "but", 
+        "not", "what", "all", "were", "we", "when", "your", "can", "there", "use", "an", "each", 
+        "which", "how", "their", "if", "will", "up", "other", "about", "out", "many", "then", "them", 
+        "these", "so", "some", "would", "make", "like", "him", "into", "has", "look", "more", "write", 
+        "go", "see", "no", "could", "people", "my", "than", "first", "been", "call", "who", "now", "find",
+        "hello", "hi", "grief", "done", "help", "please", "thanks", "thank"
+    }
+    
+    spanish_words = {
+        "el", "la", "los", "las", "un", "una", "unos", "unas", "y", "o", "pero", "si", "no", "por", 
+        "para", "con", "en", "de", "del", "al", "que", "es", "son", "esta", "este", "esto", "yo", 
+        "tu", "él", "ella", "nosotros", "ellos", "me", "te", "se", "lo", "le", "como", "mas", "más", 
+        "mi", "mis", "tus", "su", "sus", "cómo", "hola", "gracias", "duelo", "accidente", "violencia", 
+        "desastre", "terminar", "ayuda", "por favor"
+    }
+    
+    en_count = sum(1 for w in words if w in english_words)
+    es_count = sum(1 for w in words if w in spanish_words)
+    
+    if en_count > es_count:
+        return "en"
+    return "es"
 
 # Inicializar servicios globales para soportar múltiples sesiones concurrentes (ej: Gradio)
 session_service = InMemorySessionService()
@@ -86,99 +115,109 @@ async def ensure_session_initialized(session_id: str, user_id: str):
             pass
     initialized_sessions.add(session_id)
 
-async def responder(user_input: str, history, session_id: str, user_id: str = "gradio_user") -> str:
-    """Ejecuta el flujo completo de agentes (Analista -> Enrutador -> Especialista -> Maestro)."""
-    # Asegurar que las sesiones estén preparadas para esta sesión de usuario
-    await ensure_session_initialized(session_id, user_id)
-    
-    # 1. Ejecutar el Analista de Chats
-    analisis_json_str = await call_agent_with_retry(
-        runners["analista"], session_service, "soteria_analista", session_id, user_id, user_input
-    )
-
-    # 2. Ejecutar el Enrutador
-    enrutamiento_json_str = await call_agent_with_retry(
-        runners["enrutador"], session_service, "soteria_enrutador", session_id, user_id, analisis_json_str
-    )
-
-    # Parsear las decisiones del enrutador
+async def responder_stream(user_input: str, history, session_id: str, user_id: str = "gradio_user"):
+    """Ejecuta el flujo completo de agentes (Analista -> Enrutador -> Especialista -> Maestro) en streaming."""
     try:
-        decision = json.loads(enrutamiento_json_str.strip())
-        destino = decision.get("destino", "MAESTRO_DIRECTO")
-    except Exception:
-        destino = "MAESTRO_DIRECTO"
-
-    # 3. Flujo condicional basado en la decisión del Enrutador
-    final_response = ""
-
-    if destino == "SEGURIDAD":
-        instruccion_seguridad = (
-            "INSTRUCCIÓN INTERNA DE SEGURIDAD: El facilitador real se encuentra en crisis personal. "
-            "Activa tu barrera de seguridad de inmediato, detén toda simulación y proporciona los "
-            "recursos nacionales directos (911, Línea de la Vida, SAPTEL) con calidez y tono de SoterIA."
-        )
-        final_response = await call_agent_with_retry(
-            runners["maestro"], session_service, "soteria_maestro", session_id, user_id, instruccion_seguridad
+        # Asegurar que las sesiones estén preparadas para esta sesión de usuario
+        await ensure_session_initialized(session_id, user_id)
+        
+        # 1. Ejecutar el Analista de Chats
+        analisis_json_str = await call_agent_with_retry(
+            runners["analista"], session_service, "soteria_analista", session_id, user_id, user_input
         )
 
-    elif destino == "MAESTRO_DIRECTO":
-        final_response = await call_agent_with_retry(
-            runners["maestro"], session_service, "soteria_maestro", session_id, user_id, user_input
+        # 2. Ejecutar el Enrutador
+        enrutamiento_json_str = await call_agent_with_retry(
+            runners["enrutador"], session_service, "soteria_enrutador", session_id, user_id, analisis_json_str
         )
 
-    elif destino == "ESPECIALISTA_REPASO":
-        explicacion_especialista = await call_agent_with_retry(
-            runners["repaso"], session_service, "soteria_repaso", session_id, user_id, user_input
-        )
-        prompt_maestro = (
-            f"El especialista de repaso ha generado esta explicación para la consulta del facilitador:\n"
-            f"{explicacion_especialista}\n\n"
-            f"Entrégale esta información al facilitador utilizando tu voz y cuidado de SoterIA, sin alterar datos."
-        )
-        final_response = await call_agent_with_retry(
-            runners["maestro"], session_service, "soteria_maestro", session_id, user_id, prompt_maestro
-        )
+        # Parsear las decisiones del enrutador
+        try:
+            decision = json.loads(enrutamiento_json_str.strip())
+            destino = decision.get("destino", "MAESTRO_DIRECTO")
+        except Exception:
+            destino = "MAESTRO_DIRECTO"
 
-    elif destino == "ESPECIALISTA_DERIVACION":
-        recursos_especialista = await call_agent_with_retry(
-            runners["derivacion"], session_service, "soteria_derivacion", session_id, user_id, user_input
-        )
-        prompt_maestro = (
-            f"El especialista de derivación ha proporcionado estos recursos e indicaciones:\n"
-            f"{recursos_especialista}\n\n"
-            f"Comunica esta información al facilitador utilizando tu voz y cuidado de SoterIA, "
-            f"entregando los números de teléfono exactos con calidez."
-        )
-        final_response = await call_agent_with_retry(
-            runners["maestro"], session_service, "soteria_maestro", session_id, user_id, prompt_maestro
-        )
+        # 3. Flujo condicional basado en la decisión del Enrutador
+        final_prompt = ""
 
-    elif destino == "ESPECIALISTA_SIMULADOR":
-        simulador_output = await call_agent_with_retry(
-            runners["simulador"], session_service, "soteria_simulador", session_id, user_id, user_input
-        )
-        es_feedback = any(k in simulador_output for k in ["Fortalezas", "Áreas de mejora", "Retroalimentación", "✅", "🔧"])
-        if es_feedback:
-            prompt_maestro = (
-                f"Esta es la retroalimentación final de la práctica brindada por el simulador:\n"
-                f"{simulador_output}\n\n"
-                f"Entrégale esta evaluación al facilitador utilizando tu voz oficial de SoterIA."
+        if destino == "SEGURIDAD":
+            final_prompt = (
+                "INSTRUCCIÓN INTERNA DE SEGURIDAD: El facilitador real se encuentra en crisis personal. "
+                "Activa tu barrera de seguridad de inmediato, detén toda simulación y proporciona los "
+                "recursos nacionales directos (911, Línea de la Vida, SAPTEL) con calidez y tono de SoterIA."
             )
-            final_response = await call_agent_with_retry(
-                runners["maestro"], session_service, "soteria_maestro", session_id, user_id, prompt_maestro
+
+        elif destino == "MAESTRO_DIRECTO":
+            final_prompt = user_input
+
+        elif destino == "ESPECIALISTA_REPASO":
+            explicacion_especialista = await call_agent_with_retry(
+                runners["repaso"], session_service, "soteria_repaso", session_id, user_id, user_input
             )
+            final_prompt = (
+                f"El especialista de repaso ha generado esta explicación para la consulta del facilitador:\n"
+                f"{explicacion_especialista}\n\n"
+                f"Entrégale esta información al facilitador utilizando tu voz y cuidado de SoterIA, sin alterar datos."
+            )
+
+        elif destino == "ESPECIALISTA_DERIVACION":
+            recursos_especialista = await call_agent_with_retry(
+                runners["derivacion"], session_service, "soteria_derivacion", session_id, user_id, user_input
+            )
+            final_prompt = (
+                f"El especialista de derivación ha proporcionado estos recursos e indicaciones:\n"
+                f"{recursos_especialista}\n\n"
+                f"Comunica esta información al facilitador utilizando tu voz y cuidado de SoterIA, "
+                f"entregando los números de teléfono exactos con calidez."
+            )
+
+        elif destino == "ESPECIALISTA_SIMULADOR":
+            simulador_output = await call_agent_with_retry(
+                runners["simulador"], session_service, "soteria_simulador", session_id, user_id, user_input
+            )
+            es_feedback = any(k in simulador_output for k in ["Fortalezas", "Áreas de mejora", "Retroalimentación", "✅", "🔧"])
+            if es_feedback:
+                final_prompt = (
+                    f"Esta es la retroalimentación final de la práctica brindada por el simulador:\n"
+                    f"{simulador_output}\n\n"
+                    f"Entrégale esta evaluación al facilitador utilizando tu voz oficial de SoterIA."
+                )
+            else:
+                final_prompt = (
+                    f"Este es un turno del personaje de la simulación (diálogo en primer plano del personaje):\n"
+                    f"{simulador_output}\n\n"
+                    f"Transmítelo exactamente de forma IDÉNTICA e INALTERADA al usuario. No añadas explicaciones "
+                    f"ni comentarios fuera de personaje."
+                )
+
+        # 4. Transmitir en streaming la llamada final al Maestro
+        content = types.Content(role="user", parts=[types.Part(text=final_prompt)])
+        response_parts = []
+        async for event in runners["maestro"].run_async(
+            user_id=user_id,
+            session_id=session_id,
+            new_message=content
+        ):
+            if event.content and event.content.parts:
+                for part in event.content.parts:
+                    if part.text:
+                        response_parts.append(part.text)
+                        yield "".join(response_parts)
+
+    except Exception as e:
+        lang = detect_language_local(user_input)
+        if lang == "en":
+            yield "Oof — I'm getting a lot of requests right now and got a bit overloaded. Give me a few seconds and try again — I'm still here. 🤍"
         else:
-            prompt_maestro = (
-                f"Este es un turno del personaje de la simulación (diálogo en primer plano del personaje):\n"
-                f"{simulador_output}\n\n"
-                f"Transmítelo exactamente de forma IDÉNTICA e INALTERADA al usuario. No añadas explicaciones "
-                f"ni comentarios fuera de personaje."
-            )
-            final_response = await call_agent_with_retry(
-                runners["maestro"], session_service, "soteria_maestro", session_id, user_id, prompt_maestro
-            )
+            yield "Uy, justo ahora estoy recibiendo muchas consultas y me saturé tantito. Dame unos segundos y vuelve a intentar — aquí sigo. 🤍"
 
-    return final_response
+async def responder(user_input: str, history, session_id: str, user_id: str = "gradio_user") -> str:
+    """Ejecuta el flujo completo de agentes (Analista -> Enrutador -> Especialista -> Maestro) de forma bloqueante."""
+    last_chunk = ""
+    async for chunk in responder_stream(user_input, history, session_id, user_id):
+        last_chunk = chunk
+    return last_chunk
 
 async def main():
     print("==================================================================")
