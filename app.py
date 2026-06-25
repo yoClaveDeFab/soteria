@@ -1,3 +1,4 @@
+import os
 import uuid
 import gradio as gr
 import asyncio
@@ -601,6 +602,10 @@ async def bot_msg(history, session_state):
     yield history
     
     # Genera un ID de sesión único si no existe
+    if callable(session_state):
+        session_state = session_state()
+    if not isinstance(session_state, dict):
+        session_state = {"id_sesion": f"soteria_{uuid.uuid4()}"}
     if "id_sesion" not in session_state:
         session_state["id_sesion"] = f"soteria_{uuid.uuid4()}"
     session_id = session_state["id_sesion"]
@@ -621,9 +626,10 @@ with gr.Blocks() as demo:
     session_state = gr.State(value=get_initial_state)
     
     # Encabezado
-    gr.HTML("""
+    avatar_abs_path = os.path.abspath("bot_avatar.png").replace("\\", "/")
+    gr.HTML(f"""
     <div class='header-container'>
-        <img src='/file=bot_avatar.png' class='header-logo' alt='SoterIA Logo'>
+        <img src='/file={avatar_abs_path}' class='header-logo' alt='SoterIA Logo'>
         <div>
             <h1 class='header-title'>SoterIA</h1>
             <p class='header-subtitle'>Asistente de Entrenamiento Bilingüe en Primeros Auxilios Psicológicos (PAP)</p>
@@ -785,4 +791,4 @@ with gr.Blocks() as demo:
     )
 
 if __name__ == "__main__":
-    demo.queue().launch(theme=gr.themes.Soft(primary_hue="teal", secondary_hue="slate"), css=css, js=js_func)
+    demo.queue().launch(theme=gr.themes.Soft(primary_hue="teal", secondary_hue="slate"), css=css, js=js_func, allowed_paths=[os.path.abspath(".")])
