@@ -151,7 +151,7 @@ SoterIA demonstrates full compliance with all **6 Capstone technical requirement
 | **2. MCP Server** | `analista_chats/agent.py` | Connects to `google-sheets-mcp` via Stdio Connection Params to write logs. |
 | **3. Antigravity** | Video Presentation | Demonstrates local testing and deployment workflows using agentic automation. |
 | **4. Security Features** | `enrutador/agent.py`, `app.py` | Safety Gate checks for real-crisis signals and prevents harmful system behavior. |
-| **5. Deployability** | HF Spaces | Configured with dynamic OAuth 2.0 and Service Account environment variables. |
+| **5. Deployability** | [HF Spaces](https://huggingface.co/spaces/claveDeFab/soteria) | Configured with dynamic OAuth 2.0 and Service Account environment variables. |
 | **6. Agent Skills (CLI)** | `run_soteria.py` (main) | A fully functional interactive terminal CLI interface for offline practice. |
 
 ---
