@@ -719,6 +719,7 @@ with gr.Blocks() as demo:
         with gr.Column(scale=3, elem_classes="chat-column"):
             with gr.Column(elem_classes="chat-container"):
                 chatbot = gr.Chatbot(
+                    label="CHAT",
                     value=[
                         {
                             "role": "assistant",
