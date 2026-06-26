@@ -19,6 +19,27 @@ license: apache-2.0
 
 ---
 
+## 🎯 Target Audience & Purpose / Público Objetivo y Propósito
+
+> [!IMPORTANT]
+> ### 👥 ¿Para quién es SoterIA? / Who is SoterIA for?
+> 
+> * **Este asistente es para ti si / This assistant is for you if:**
+>   * Te estás preparando o estás interesado en dar **Primeros Auxilios Psicológicos (PAP)** como voluntario, brigadista, rescatista o miembro de la comunidad. / *You are preparing or are interested in providing **Psychological First Aid (PFA)** as a volunteer, first responder, or community helper.*
+>   * Buscas un entorno seguro y simulado para practicar y perfeccionar la aplicación de los protocolos teóricos de contención emocional. / *You want a safe, simulated environment to practice and refine the application of theoretical emotional containment protocols.*
+>   * Deseas recibir retroalimentación estructurada basada en los estándares de la OMS y UNICEF sobre tu desempeño en simulaciones. / *You want to receive structured feedback based on WHO and UNICEF standards regarding your performance in simulations.*
+>
+> * **Este asistente NO es para ti si / This assistant is NOT for you if:**
+>   * **❌ Buscas u/o necesitas atención psicológica en vivo, terapia o intervención en crisis en tiempo real.** SoterIA **no** es un agente que proporciona primeros auxilios psicológicos directos a personas afectadas. / *You are looking for or need live psychological care, therapy, or real-time crisis intervention. SoterIA is **not** an agent that provides direct psychological first aid to affected individuals.*
+>   * Estás experimentando una emergencia o crisis emocional en este momento. Si es así, por favor busca ayuda profesional de inmediato o llama a la **Línea de la Vida (800 911 2000 en México)** o al **911** / *You are experiencing an emergency or emotional crisis right now. If so, please seek professional help immediately or call your local emergency services or a crisis hotline.*
+>   * Crees que una simulación de Inteligencia Artificial puede reemplazar el criterio clínico o la intervención de un profesional de la salud mental certificado. / *You believe that an AI simulation can replace the clinical judgment or intervention of a certified mental health professional.*
+>
+> ---
+>
+> ⚠️ **SoterIA es estrictamente un simulador de entrenamiento educativo y no proporciona intervención en crisis a personas reales que estén experimentando una emergencia.** / *SoterIA is strictly an educational training simulator and does not provide crisis intervention to real people experiencing an emergency.*
+
+---
+
 ## 📖 Table of Contents
 1. [The Problem: A Real Gap, a Dangerous Shortcut](#-the-problem-a-real-gap-a-dangerous-shortcut)
 2. [Why Autonomous Agents & Google ADK?](#-why-autonomous-agents--google-adk)

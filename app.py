@@ -642,8 +642,12 @@ with gr.Blocks() as demo:
     <div class='warning-banner'>
         <p class='warning-text'>
             ⚠️ <strong>Aviso Importante / Important Notice:</strong><br>
-            SoterIA es una herramienta educativa y de práctica. No sustituye la atención de un profesional ni los servicios de emergencia. Si tú o alguien más está en riesgo, marca: <strong>Línea de la Vida — 800 911 2000</strong> (gratis, 24 h, México) · <strong>Emergencias — 911</strong>.<br><br>
-            SoterIA is an educational and practice tool. It is not a substitute for professional care or emergency services. If you or someone else is at risk, call: <strong>Línea de la Vida — 800 911 2000</strong> (free, 24/7, Mexico) · <strong>Emergencies — 911</strong>, or your local emergency number.
+            <strong>Este asistente es para ti si:</strong> Te estás preparando o estás interesado en aplicar Primeros Auxilios Psicológicos (PAP) como voluntario, brigadista o personal de respuesta y buscas practicar en un simulador.<br>
+            <strong>Este asistente NO es para ti si:</strong> Necesitas o buscas atención psicológica en tiempo real, terapia, o intervención en crisis para personas afectadas. SoterIA <u>no</u> proporciona auxilio directo a personas en crisis.<br>
+            Si tú o alguien más está en riesgo o crisis emocional, por favor llama inmediatamente a la <strong>Línea de la Vida (800 911 2000 en México)</strong> o al <strong>911</strong> (Emergencias).<br><br>
+            <strong>This assistant is for you if:</strong> You are training or interested in applying Psychological First Aid (PFA) as a volunteer, first responder, or community helper and want to practice in a simulator.<br>
+            <strong>This assistant is NOT for you if:</strong> You need or are seeking real-time psychological support, therapy, or crisis intervention. SoterIA does <u>not</u> provide direct first aid to individuals in crisis.<br>
+            If you or someone else is at risk or experiencing an emotional crisis, please contact your local emergency services (like <strong>911</strong>) or a crisis hotline immediately.
         </p>
     </div>
     """)
