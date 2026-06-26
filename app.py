@@ -180,17 +180,32 @@ body, html, .gradio-container {
     color: #fca5a5;
 }
 .emergency-strip {
-    background: rgba(239, 68, 68, 0.08) !important;
+    background: rgba(239, 68, 68, 0.06) !important;
     border: 1px solid rgba(239, 68, 68, 0.2) !important;
     border-left: 4px solid #ef4444 !important;
-    border-radius: 14px;
-    padding: 12px 18px;
+    border-radius: 12px;
+    padding: 10px 18px;
     font-size: clamp(0.78rem, 2.2vw, 0.85rem);
     line-height: 1.5;
     color: #fca5a5;
     text-align: center;
 }
 .emergency-strip strong {
+    color: #ffffff;
+}
+.context-strip {
+    background: rgba(245, 158, 11, 0.05) !important;
+    border: 1px solid rgba(245, 158, 11, 0.2) !important;
+    border-left: 4px solid #f59e0b !important;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-size: clamp(0.78rem, 2.2vw, 0.85rem);
+    line-height: 1.5;
+    color: #fbbf24;
+    text-align: center;
+    margin-bottom: 12px;
+}
+.context-strip strong {
     color: #ffffff;
 }
 
@@ -723,11 +738,16 @@ with gr.Blocks() as demo:
             </div>
         </div>
         
-        <!-- Franja de Emergencia e Información Geográfica -->
+        <!-- Franja de Contexto Geográfico (Dorado/Amarillo) -->
+        <div class='context-strip'>
+            🇲🇽 <strong>Contexto Geográfico / Geographic Context:</strong> El sistema está adaptado para el <strong>contexto de México</strong> (derivaciones a SAPTEL, Línea de la Vida, etc.). / 
+            <em>Tailored specifically for the <strong>Mexican context</strong> (referrals to SAPTEL, Línea de la Vida, etc.).</em>
+        </div>
+
+        <!-- Franja de Emergencia (Rojo) -->
         <div class='emergency-strip'>
-            ⚠️ <strong>Nota Geográfica y Ayuda / Geographic Note & Support:</strong> El sistema está adaptado para el <strong>contexto de México</strong> (derivaciones a SAPTEL, Línea de la Vida, etc.). 
-            Si tú o alguien más está en riesgo o crisis, llama de inmediato a la <strong>Línea de la Vida — 800 911 2000</strong> o al <strong>911</strong> (Emergencias), o a los números de emergencia locales de tu país. / 
-            <em>Tailored for the <strong>Mexican context</strong>. If you or someone else is at risk, call <strong>911</strong> or local emergency services immediately.</em>
+            ⚠️ <strong>Atención en Crisis / Crisis Support:</strong> Si tú o alguien más está en riesgo o crisis emocional, llama de inmediato a la <strong>Línea de la Vida — 800 911 2000</strong> o al <strong>911</strong> (México), o a tus servicios de emergencia locales. / 
+            <em>If you or someone else is at risk, please call <strong>911</strong> or local emergency services immediately.</em>
         </div>
     </div>
     """)
