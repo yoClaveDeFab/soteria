@@ -652,9 +652,11 @@ with gr.Blocks() as demo:
             ⚠️ <strong>Aviso Importante / Important Notice:</strong><br>
             <strong>Este asistente es para ti si:</strong> Te estás preparando o estás interesado en aplicar Primeros Auxilios Psicológicos (PAP) como voluntario, brigadista o personal de respuesta y buscas practicar en un simulador.<br>
             <strong>Este asistente NO es para ti si:</strong> Necesitas o buscas atención psicológica en tiempo real, terapia, o intervención en crisis para personas afectadas. SoterIA <u>no</u> proporciona auxilio directo a personas en crisis.<br>
+            <strong>Contexto Geográfico:</strong> Actualmente, los escenarios de simulación y directorios de derivación están diseñados para el <strong>contexto de México</strong> (SAPTEL, Línea de la Vida, etc.).<br>
             Si tú o alguien más está en riesgo o crisis emocional, por favor llama inmediatamente a la <strong>Línea de la Vida (800 911 2000 en México)</strong> o al <strong>911</strong> (Emergencias).<br><br>
             <strong>This assistant is for you if:</strong> You are training or interested in applying Psychological First Aid (PFA) as a volunteer, first responder, or community helper and want to practice in a simulator.<br>
             <strong>This assistant is NOT for you if:</strong> You need or are seeking real-time psychological support, therapy, or crisis intervention. SoterIA does <u>not</u> provide direct first aid to individuals in crisis.<br>
+            <strong>Geographic Context:</strong> Currently, the simulation scenarios and referral directories are tailored for the <strong>Mexican context</strong> (SAPTEL, Línea de la Vida, etc.).<br>
             If you or someone else is at risk or experiencing an emotional crisis, please contact your local emergency services (like <strong>911</strong>) or a crisis hotline immediately.
         </p>
     </div>
