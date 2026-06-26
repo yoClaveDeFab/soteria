@@ -3,6 +3,7 @@ import uuid
 import gradio as gr
 import asyncio
 import json
+import base64
 
 js_func = """
 (() => {
@@ -625,11 +626,18 @@ async def bot_msg(history, session_state):
 with gr.Blocks() as demo:
     session_state = gr.State(value=get_initial_state)
     
-    # Encabezado
-    avatar_abs_path = os.path.abspath("bot_avatar.png").replace("\\", "/")
+    # Encabezado (cargando el logo en Base64 para compatibilidad total con Hugging Face Spaces)
+    try:
+        with open("bot_avatar.png", "rb") as img_file:
+            avatar_base64 = base64.b64encode(img_file.read()).decode("utf-8")
+        avatar_src = f"data:image/png;base64,{avatar_base64}"
+    except Exception:
+        avatar_abs_path = os.path.abspath("bot_avatar.png").replace("\\", "/")
+        avatar_src = f"/file={avatar_abs_path}"
+
     gr.HTML(f"""
     <div class='header-container'>
-        <img src='/file={avatar_abs_path}' class='header-logo' alt='SoterIA Logo'>
+        <img src='{avatar_src}' class='header-logo' alt='SoterIA Logo'>
         <div>
             <h1 class='header-title'>SoterIA</h1>
             <p class='header-subtitle'>Asistente de Entrenamiento Bilingüe en Primeros Auxilios Psicológicos (PAP)</p>
