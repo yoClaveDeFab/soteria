@@ -1,3 +1,16 @@
+---
+title: SoterIA
+emoji: 🛡️
+colorFrom: indigo
+colorTo: blue
+sdk: gradio
+sdk_version: 6.19.0
+python_version: "3.11"
+app_file: app.py
+pinned: false
+license: apache-2.0
+---
+
 # SoterIA: Bilingual AI Multi-Agent Psychological First Aid (PFA) Training Assistant
 
 🛡️ **SoterIA** (from the Greek *Soteria* - protection/salvation, combined with *IA/AI*) is an advanced bilingual conversational training platform. Built on the **Google Agent Development Kit (ADK)** and powered by **Gemini 2.5**, it trains volunteers, emergency responders, and community members in the protocols of **Psychological First Aid (PFA)** based on WHO and UNICEF standards.
