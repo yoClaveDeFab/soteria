@@ -127,6 +127,8 @@ graph TD
 
 To log training telemetry for Capstone evaluation and system observability, the Chat Analyst connects to a **Google Sheets MCP Server** via standard stdio parameters.
 
+📈 **Live Telemetry Spreadsheet**: You can view the live, anonymized training logs recorded by the MCP server in this public, read-only [Google Sheet](https://docs.google.com/spreadsheets/d/1o4ERfUvjSYbAhdb_V4tJRp7OIj5b_Tg72fme5LK-JIs/edit?usp=sharing).
+
 ### 🔒 Privacy Safeguards
 To comply with medical, ethical, and privacy standards, **SoterIA never logs PII (Personally Identifiable Information)**, text transcripts, or raw messages. It only appends anonymous metadata:
 *   `id_sesion` (Unique session UUID)
