@@ -35,7 +35,7 @@ license: apache-2.0
 >   * Crees que una simulación de Inteligencia Artificial puede reemplazar el criterio clínico o la intervención de un profesional de la salud mental certificado. / *You believe that an AI simulation can replace the clinical judgment or intervention of a certified mental health professional.*
 >
 > * **Contexto geográfico / Geographic Context:**
->   * 🇲🇽 Actualmente, los escenarios de simulación, los directorios de redes de apoyo y las líneas de emergencia integrados en SoterIA están adaptados y enfocados para el **contexto de México** (SAPTEL, Línea de la Vida, etc.). / *Currently, the simulation scenarios, support network directories, and emergency lines integrated into SoterIA are adapted and focused on the **Mexican context** (SAPTEL, Línea de la Vida, etc.).*
+>   * 📍 Actualmente, los escenarios de simulación, los directorios de redes de apoyo y las líneas de emergencia integrados en SoterIA están adaptados y enfocados para el **contexto de México** (SAPTEL, Línea de la Vida, etc.). / *Currently, the simulation scenarios, support network directories, and emergency lines integrated into SoterIA are adapted and focused on the **Mexican context** (SAPTEL, Línea de la Vida, etc.).*
 >
 > ---
 >

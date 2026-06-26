@@ -740,7 +740,7 @@ with gr.Blocks() as demo:
         
         <!-- Franja de Contexto Geográfico (Dorado/Amarillo) -->
         <div class='context-strip'>
-            🇲🇽 <strong>Contexto Geográfico / Geographic Context:</strong> El sistema está adaptado para el <strong>contexto de México</strong> (derivaciones a SAPTEL, Línea de la Vida, etc.). / 
+            📍 <strong>Contexto Geográfico / Geographic Context:</strong> El sistema está adaptado para el <strong>contexto de México</strong> (derivaciones a SAPTEL, Línea de la Vida, etc.). / 
             <em>Tailored specifically for the <strong>Mexican context</strong> (referrals to SAPTEL, Línea de la Vida, etc.).</em>
         </div>
 
