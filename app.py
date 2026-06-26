@@ -120,25 +120,78 @@ body, html, .gradio-container {
     margin: 0;
 }
 
-/* Warning Banner & Safety Warnings */
-.warning-banner {
-    background: rgba(239, 68, 68, 0.05) !important;
-    border: 1px solid rgba(239, 68, 68, 0.18) !important;
-    border-left: 4px solid #ef4444 !important;
-    border-radius: 16px !important;
-    padding: clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px) !important;
-    margin-bottom: 25px !important;
+/* Onboarding Grid & Cards (Green/Red side-by-side) */
+.onboarding-container {
+    margin-bottom: 25px;
+    animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.onboarding-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.onboarding-card {
+    border-radius: 18px;
+    padding: 18px 22px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
 }
-.warning-text {
-    color: #fca5a5 !important;
-    font-size: clamp(0.8rem, 2.2vw, 0.9rem);
-    font-weight: 500;
+.onboarding-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.onboarding-card ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: clamp(0.78rem, 2.2vw, 0.86rem);
     line-height: 1.6;
-    margin: 0 !important;
+    color: #cbd5e1;
+}
+.onboarding-card li {
+    margin-bottom: 8px;
+}
+.onboarding-card li:last-child {
+    margin-bottom: 0;
+}
+.onboarding-card.card-success {
+    background: rgba(16, 185, 129, 0.04) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    border-left: 4px solid #10b981 !important;
+}
+.onboarding-card.card-success h3 {
+    color: #34d399;
+}
+.onboarding-card.card-danger {
+    background: rgba(239, 68, 68, 0.04) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    border-left: 4px solid #ef4444 !important;
+}
+.onboarding-card.card-danger h3 {
+    color: #fca5a5;
+}
+.emergency-strip {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    border-left: 4px solid #ef4444 !important;
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-size: clamp(0.78rem, 2.2vw, 0.85rem);
+    line-height: 1.5;
+    color: #fca5a5;
+    text-align: center;
+}
+.emergency-strip strong {
+    color: #ffffff;
 }
 
 /* Loading notice during system wakeup */
@@ -645,20 +698,37 @@ with gr.Blocks() as demo:
     </div>
     """)
     
-    # Banner de advertencia obligatorio
+    # Banner de advertencia obligatorio en dos bloques paralelos
     gr.HTML("""
-    <div class='warning-banner'>
-        <p class='warning-text'>
-            ⚠️ <strong>Aviso Importante / Important Notice:</strong><br>
-            <strong>Este asistente es para ti si:</strong> Te estás preparando o estás interesado en aplicar Primeros Auxilios Psicológicos (PAP) como voluntario, brigadista o personal de respuesta y buscas practicar en un simulador.<br>
-            <strong>Este asistente NO es para ti si:</strong> Necesitas o buscas atención psicológica en tiempo real, terapia, o intervención en crisis para personas afectadas. SoterIA <u>no</u> proporciona auxilio directo a personas en crisis.<br>
-            <strong>Contexto Geográfico:</strong> Actualmente, los escenarios de simulación y directorios de derivación están diseñados para el <strong>contexto de México</strong> (SAPTEL, Línea de la Vida, etc.).<br>
-            Si tú o alguien más está en riesgo o crisis emocional, por favor llama inmediatamente a la <strong>Línea de la Vida (800 911 2000 en México)</strong> o al <strong>911</strong> (Emergencias).<br><br>
-            <strong>This assistant is for you if:</strong> You are training or interested in applying Psychological First Aid (PFA) as a volunteer, first responder, or community helper and want to practice in a simulator.<br>
-            <strong>This assistant is NOT for you if:</strong> You need or are seeking real-time psychological support, therapy, or crisis intervention. SoterIA does <u>not</u> provide direct first aid to individuals in crisis.<br>
-            <strong>Geographic Context:</strong> Currently, the simulation scenarios and referral directories are tailored for the <strong>Mexican context</strong> (SAPTEL, Línea de la Vida, etc.).<br>
-            If you or someone else is at risk or experiencing an emotional crisis, please contact your local emergency services (like <strong>911</strong>) or a crisis hotline immediately.
-        </p>
+    <div class='onboarding-container'>
+        <div class='onboarding-grid'>
+            <!-- Tarjeta Verde: Para quién es -->
+            <div class='onboarding-card card-success'>
+                <h3>🟢 Este asistente es para ti si... / This assistant is for you if...</h3>
+                <ul>
+                    <li>Te estás preparando o estás interesado en aplicar <strong>Primeros Auxilios Psicológicos (PAP)</strong> como voluntario, brigadista, personal de respuesta o miembro de la comunidad. / <em>You are training or interested in applying PFA as a volunteer, first responder, or community helper.</em></li>
+                    <li>Buscas un entorno seguro y simulado para practicar protocolos teóricos de contención emocional en situaciones de crisis. / <em>You want a safe, simulated environment to practice theoretical emotional containment protocols.</em></li>
+                    <li>Deseas evaluar tu desempeño y recibir retroalimentación estructurada basada en los estándares de la OMS y UNICEF. / <em>You want to evaluate your performance and receive structured feedback based on WHO and UNICEF standards.</em></li>
+                </ul>
+            </div>
+            
+            <!-- Tarjeta Roja: Para quién NO es -->
+            <div class='onboarding-card card-danger'>
+                <h3>🔴 Este asistente NO es para ti si... / This assistant is NOT for you if...</h3>
+                <ul>
+                    <li><strong>❌ Buscas u/o necesitas terapia, tratamiento psicológico o intervención en crisis en tiempo real.</strong> SoterIA <u>no</u> proporciona auxilio directo a personas afectadas. / <em>You need therapy, treatment, or real-time crisis intervention. SoterIA does <u>not</u> provide direct first aid to individuals in crisis.</em></li>
+                    <li>Crees que una herramienta de Inteligencia Artificial puede sustituir el juicio clínico o la intervención de un profesional de la salud mental certificado. / <em>You believe that an AI tool can replace the clinical judgment or care of a certified mental health professional.</em></li>
+                    <li>Te encuentras experimentando una emergencia o crisis emocional en este momento. / <em>You are experiencing an emergency or emotional crisis right now (if so, please call the hotline below).</em></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Franja de Emergencia e Información Geográfica -->
+        <div class='emergency-strip'>
+            ⚠️ <strong>Nota Geográfica y Ayuda / Geographic Note & Support:</strong> El sistema está adaptado para el <strong>contexto de México</strong> (derivaciones a SAPTEL, Línea de la Vida, etc.). 
+            Si tú o alguien más está en riesgo o crisis, llama de inmediato a la <strong>Línea de la Vida — 800 911 2000</strong> o al <strong>911</strong> (Emergencias), o a los números de emergencia locales de tu país. / 
+            <em>Tailored for the <strong>Mexican context</strong>. If you or someone else is at risk, call <strong>911</strong> or local emergency services immediately.</em>
+        </div>
     </div>
     """)
     
