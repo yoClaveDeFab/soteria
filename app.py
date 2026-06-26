@@ -693,7 +693,7 @@ with gr.Blocks() as demo:
         <img src='{avatar_src}' class='header-logo' alt='SoterIA Logo'>
         <div>
             <h1 class='header-title'>SoterIA</h1>
-            <p class='header-subtitle'>Asistente de Entrenamiento Bilingüe en Primeros Auxilios Psicológicos (PAP)</p>
+            <p class='header-subtitle'>Asistente de Entrenamiento Bilingüe en Primeros Auxilios Psicológicos (PAP) / Bilingual Psychological First Aid (PFA) Training Assistant</p>
         </div>
     </div>
     """)
