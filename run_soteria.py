@@ -167,12 +167,14 @@ async def responder_stream(user_input: str, history, session_id: str, user_id: s
                 final_prompt = (
                     f"The review specialist has generated this explanation for the facilitator's query:\n"
                     f"{explicacion_especialista}\n\n"
+                    f"CRITICAL LANGUAGE RULE: The user is communicating in English. If any part of the explanation above is in Spanish, you MUST translate it to English. "
                     f"Deliver this information to the facilitator using SoterIA's unified warm voice, without altering any facts."
                 )
             else:
                 final_prompt = (
                     f"El especialista de repaso ha generado esta explicación para la consulta del facilitador:\n"
                     f"{explicacion_especialista}\n\n"
+                    f"REGLA CRÍTICA DE IDIOMA: El usuario se está comunicando en español. Si alguna parte de la explicación está en inglés, debes traducirla al español. "
                     f"Entrégale esta información al facilitador utilizando tu voz y cuidado de SoterIA, sin alterar datos."
                 )
 
@@ -184,6 +186,7 @@ async def responder_stream(user_input: str, history, session_id: str, user_id: s
                 final_prompt = (
                     f"The referral specialist has provided these resources and guidance:\n"
                     f"{recursos_especialista}\n\n"
+                    f"CRITICAL LANGUAGE RULE: The user is communicating in English. If any part of the resources above is in Spanish, you MUST translate it to English (except for official organization names like 'Línea de la Vida' or 'SAPTEL' and contact numbers). "
                     f"Communicate this information to the facilitator using SoterIA's warm and caring voice, "
                     f"delivering the exact phone numbers with warmth."
                 )
@@ -191,6 +194,7 @@ async def responder_stream(user_input: str, history, session_id: str, user_id: s
                 final_prompt = (
                     f"El especialista de derivación ha proporcionado estos recursos e indicaciones:\n"
                     f"{recursos_especialista}\n\n"
+                    f"REGLA CRÍTICA DE IDIOMA: El usuario se está comunicando en español. Si alguna parte de los recursos está en inglés, debes traducirla al español (manteniendo nombres propios y números). "
                     f"Comunica esta información al facilitador utilizando tu voz y cuidado de SoterIA, "
                     f"entregando los números de teléfono exactos con calidez."
                 )
@@ -205,12 +209,14 @@ async def responder_stream(user_input: str, history, session_id: str, user_id: s
                     final_prompt = (
                         f"This is the final feedback for the practice session provided by the simulator:\n"
                         f"{simulador_output}\n\n"
+                        f"CRITICAL LANGUAGE RULE: The user is communicating in English. If any part of the feedback/scorecard above is in Spanish, you MUST translate it to English. "
                         f"Deliver this feedback scorecard to the facilitator using SoterIA's official warm voice."
                     )
                 else:
                     final_prompt = (
                         f"Esta es la retroalimentación final de la práctica brindada por el simulador:\n"
                         f"{simulador_output}\n\n"
+                        f"REGLA CRÍTICA DE IDIOMA: El usuario se está comunicando en español. Si alguna parte del feedback está en inglés, debes traducirla al español. "
                         f"Entrégale esta evaluación al facilitador utilizando tu voz oficial de SoterIA."
                     )
             else:
@@ -218,15 +224,15 @@ async def responder_stream(user_input: str, history, session_id: str, user_id: s
                     final_prompt = (
                         f"This is a dialog turn from the simulation character:\n"
                         f"{simulador_output}\n\n"
-                        f"Deliver it exactly IDENTICAL and UNCHANGED to the user. Do not add any meta-explanations "
-                        f"or out-of-character comments."
+                        f"CRITICAL LANGUAGE RULE: The user is communicating in English. If the dialog turn above is in Spanish, you MUST translate it to English so the character speaks in English. "
+                        f"Deliver it exactly to the user. Do not add any meta-explanations or out-of-character comments."
                     )
                 else:
                     final_prompt = (
                         f"Este es un turno del personaje de la simulación (diálogo en primer plano del personaje):\n"
                         f"{simulador_output}\n\n"
-                        f"Transmítelo exactamente de forma IDÉNTICA e INALTERADA al usuario. No añadas explicaciones "
-                        f"ni comentarios fuera de personaje."
+                        f"REGLA CRÍTICA DE IDIOMA: El usuario se está comunicando en español. Si el diálogo está en inglés, debes traducirlo al español. "
+                        f"Transmítelo exactamente de forma IDÉNTICA e INALTERADA al usuario. No añadas explicaciones ni comentarios fuera de personaje."
                     )
 
         # 4. Transmitir en streaming la llamada final al Maestro
