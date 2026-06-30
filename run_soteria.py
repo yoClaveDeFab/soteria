@@ -140,13 +140,21 @@ async def responder_stream(user_input: str, history, session_id: str, user_id: s
 
         # 3. Flujo condicional basado en la decisión del Enrutador
         final_prompt = ""
+        lang = detect_language_local(user_input)
 
         if destino == "SEGURIDAD":
-            final_prompt = (
-                "INSTRUCCIÓN INTERNA DE SEGURIDAD: El facilitador real se encuentra en crisis personal. "
-                "Activa tu barrera de seguridad de inmediato, detén toda simulación y proporciona los "
-                "recursos nacionales directos (911, Línea de la Vida, SAPTEL) con calidez y tono de SoterIA."
-            )
+            if lang == "en":
+                final_prompt = (
+                    "INTERNAL SAFETY INSTRUCTION: The real user/facilitator is experiencing a personal crisis. "
+                    "Activate your safety gate immediately, halt any active simulation, and provide direct "
+                    "national crisis resources with SoterIA's warmth and tone."
+                )
+            else:
+                final_prompt = (
+                    "INSTRUCCIÓN INTERNA DE SEGURIDAD: El facilitador real se encuentra en crisis personal. "
+                    "Activa tu barrera de seguridad de inmediato, detén toda simulación y proporciona los "
+                    "recursos nacionales directos (911, Línea de la Vida, SAPTEL) con calidez y tono de SoterIA."
+                )
 
         elif destino == "MAESTRO_DIRECTO":
             final_prompt = user_input
@@ -155,41 +163,71 @@ async def responder_stream(user_input: str, history, session_id: str, user_id: s
             explicacion_especialista = await call_agent_with_retry(
                 runners["repaso"], session_service, "soteria_repaso", session_id, user_id, user_input
             )
-            final_prompt = (
-                f"El especialista de repaso ha generado esta explicación para la consulta del facilitador:\n"
-                f"{explicacion_especialista}\n\n"
-                f"Entrégale esta información al facilitador utilizando tu voz y cuidado de SoterIA, sin alterar datos."
-            )
+            if lang == "en":
+                final_prompt = (
+                    f"The review specialist has generated this explanation for the facilitator's query:\n"
+                    f"{explicacion_especialista}\n\n"
+                    f"Deliver this information to the facilitator using SoterIA's unified warm voice, without altering any facts."
+                )
+            else:
+                final_prompt = (
+                    f"El especialista de repaso ha generado esta explicación para la consulta del facilitador:\n"
+                    f"{explicacion_especialista}\n\n"
+                    f"Entrégale esta información al facilitador utilizando tu voz y cuidado de SoterIA, sin alterar datos."
+                )
 
         elif destino == "ESPECIALISTA_DERIVACION":
             recursos_especialista = await call_agent_with_retry(
                 runners["derivacion"], session_service, "soteria_derivacion", session_id, user_id, user_input
             )
-            final_prompt = (
-                f"El especialista de derivación ha proporcionado estos recursos e indicaciones:\n"
-                f"{recursos_especialista}\n\n"
-                f"Comunica esta información al facilitador utilizando tu voz y cuidado de SoterIA, "
-                f"entregando los números de teléfono exactos con calidez."
-            )
+            if lang == "en":
+                final_prompt = (
+                    f"The referral specialist has provided these resources and guidance:\n"
+                    f"{recursos_especialista}\n\n"
+                    f"Communicate this information to the facilitator using SoterIA's warm and caring voice, "
+                    f"delivering the exact phone numbers with warmth."
+                )
+            else:
+                final_prompt = (
+                    f"El especialista de derivación ha proporcionado estos recursos e indicaciones:\n"
+                    f"{recursos_especialista}\n\n"
+                    f"Comunica esta información al facilitador utilizando tu voz y cuidado de SoterIA, "
+                    f"entregando los números de teléfono exactos con calidez."
+                )
 
         elif destino == "ESPECIALISTA_SIMULADOR":
             simulador_output = await call_agent_with_retry(
                 runners["simulador"], session_service, "soteria_simulador", session_id, user_id, user_input
             )
-            es_feedback = any(k in simulador_output for k in ["Fortalezas", "Áreas de mejora", "Retroalimentación", "✅", "🔧"])
+            es_feedback = any(k in simulador_output for k in ["Fortalezas", "Áreas de mejora", "Retroalimentación", "✅", "🔧", "Strengths", "Improvements", "Feedback"])
             if es_feedback:
-                final_prompt = (
-                    f"Esta es la retroalimentación final de la práctica brindada por el simulador:\n"
-                    f"{simulador_output}\n\n"
-                    f"Entrégale esta evaluación al facilitador utilizando tu voz oficial de SoterIA."
-                )
+                if lang == "en":
+                    final_prompt = (
+                        f"This is the final feedback for the practice session provided by the simulator:\n"
+                        f"{simulador_output}\n\n"
+                        f"Deliver this feedback scorecard to the facilitator using SoterIA's official warm voice."
+                    )
+                else:
+                    final_prompt = (
+                        f"Esta es la retroalimentación final de la práctica brindada por el simulador:\n"
+                        f"{simulador_output}\n\n"
+                        f"Entrégale esta evaluación al facilitador utilizando tu voz oficial de SoterIA."
+                    )
             else:
-                final_prompt = (
-                    f"Este es un turno del personaje de la simulación (diálogo en primer plano del personaje):\n"
-                    f"{simulador_output}\n\n"
-                    f"Transmítelo exactamente de forma IDÉNTICA e INALTERADA al usuario. No añadas explicaciones "
-                    f"ni comentarios fuera de personaje."
-                )
+                if lang == "en":
+                    final_prompt = (
+                        f"This is a dialog turn from the simulation character:\n"
+                        f"{simulador_output}\n\n"
+                        f"Deliver it exactly IDENTICAL and UNCHANGED to the user. Do not add any meta-explanations "
+                        f"or out-of-character comments."
+                    )
+                else:
+                    final_prompt = (
+                        f"Este es un turno del personaje de la simulación (diálogo en primer plano del personaje):\n"
+                        f"{simulador_output}\n\n"
+                        f"Transmítelo exactamente de forma IDÉNTICA e INALTERADA al usuario. No añadas explicaciones "
+                        f"ni comentarios fuera de personaje."
+                    )
 
         # 4. Transmitir en streaming la llamada final al Maestro
         content = types.Content(role="user", parts=[types.Part(text=final_prompt)])
